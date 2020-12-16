@@ -1,4 +1,23 @@
- - name: Ensure service is enabled
+#Create Custom Container Image
+
+#Push to DockerHub Registry
+
+---
+
+- hosts: localhost
+  tasks:
+  - name: Pull .war artifact from Artifactory
+    become: true
+    get_url:
+      url: http://18.134.160.174:8081/artifactory/libs-release/com/iwayq/iwayQApp/1.0-RELEASE/iwayQApp-1.0-RELEASE.war
+      dest: /home/admin
+      url_username: admin
+      url_password: Jenkins123$
+
+  - name: install docker
+    yum: name=docker
+
+  - name: Ensure service is enabled
     command: service docker restart
 
   - name: Log into DockerHub
@@ -9,8 +28,8 @@
   - name: Rename .war Artifact
     command: mv /home/admin/iwayQApp-1.0-RELEASE.war /home/admin/devops1.war
 
-  - name: move this artifact file to the same directory as Dockerfile
-    command: mv /home/admin/devops1.war /root/dockercode
+ # - name: move this artifact file to the same directory as Dockerfile
+ #   command: mv /home/admin/devops1.war /root/dockercode
 
   - name: Pull Tomcat  Container Image
     docker_image:
@@ -21,7 +40,7 @@
     docker_image:
       name: devops1
       build:
-        path: dockercode
+        path: /home/admin
         pull: no
         args:
           listen_port: 8080
@@ -32,4 +51,3 @@
       name: devops1
       repository: dockerlearn2020devops/devops1
       push: yes
-      source: local
