@@ -1,0 +1,21 @@
+#Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-web-deploy
+  labels:
+    app: devops-web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: devops-web
+  template:
+    metadata:
+      labels:
+        app: devops-web
+    spec:
+      containers:
+      - name: devops-container
+        image: dockerlearn2020devops/devops1
+        ports: 8080

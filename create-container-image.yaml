@@ -1,0 +1,35 @@
+ - name: Ensure service is enabled
+    command: service docker restart
+
+  - name: Log into DockerHub
+    docker_login:
+     username: dockerlearn2020devops
+     password: Jenkins123$
+
+  - name: Rename .war Artifact
+    command: mv /home/admin/iwayQApp-1.0-RELEASE.war /home/admin/devops1.war
+
+  - name: move this artifact file to the same directory as Dockerfile
+    command: mv /home/admin/devops1.war /root/dockercode
+
+  - name: Pull Tomcat  Container Image
+    docker_image:
+      name: tomcat:latest
+      source: pull
+
+  - name: Build image and with build args
+    docker_image:
+      name: devops1
+      build:
+        path: dockercode
+        pull: no
+        args:
+          listen_port: 8080
+      source: build
+
+  - name: Push to docker hub
+    docker_image:
+      name: devops1
+      repository: dockerlearn2020devops/devops1
+      push: yes
+      source: local
