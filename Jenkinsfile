@@ -27,21 +27,21 @@ pipeline {
     stage ('Artifactory configuration') {
             steps {
                 rtServer (
-                    id: "artifactory",
+                    id: "jfrog",
                     url: "http://18.134.160.174:8081/artifactory",
                     credentialsId: "jfrog"
                 )
 
                 rtMavenDeployer (
                     id: "MAVEN_DEPLOYER",
-                    serverId: "artifactory",
+                    serverId: "jfrog",
                     releaseRepo: "libs-release",
                     snapshotRepo: "libs-snapshot"
                 )
 
                 rtMavenResolver (
                     id: "MAVEN_RESOLVER",
-                    serverId: "artifactory",
+                    serverId: "jfrog",
                     releaseRepo: "libs-release",
                     snapshotRepo: "libs-snapshot"
                 )
@@ -63,7 +63,9 @@ pipeline {
     stage ('Publish build info') {
             steps {
                 rtPublishBuildInfo (
-                    serverId: "jfrog"
+                    //serverId: "jfrog"
+                    url: "http://18.134.160.174:8081/artifactory",
+                    credentialsId: "jfrog"
              )
         }
     }
