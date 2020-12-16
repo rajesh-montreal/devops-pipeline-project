@@ -9,7 +9,7 @@ pipeline {
 
       stage ('Checkout SCM'){
         steps {
-          checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'git', url: 'https://iwayqtech@bitbucket.org/iwayqtech/devops-pipeline-project.git']]])
+          checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'github', url: 'https://github.com/rajesh-montreal/devops-pipeline-project.git']]])
         }
       }
 	  
@@ -23,36 +23,25 @@ pipeline {
          
       }
    
-     stage ('SonarQube Analysis') {
-        steps {
-              withSonarQubeEnv('sonar') {
-                
-				dir('java-source'){
-                 sh 'mvn -U clean install sonar:sonar'
-                }
-				
-              }
-            }
-      }
 
     stage ('Artifactory configuration') {
             steps {
                 rtServer (
                     id: "jfrog",
-                    url: "http://3.84.217.9:8082/artifactory",
+                    url: "http://18.134.160.174:8081/artifactory",
                     credentialsId: "jfrog"
                 )
 
                 rtMavenDeployer (
                     id: "MAVEN_DEPLOYER",
-                    serverId: "jfrog",
+                    serverId: "artifactory",
                     releaseRepo: "libs-release",
                     snapshotRepo: "libs-snapshot"
                 )
 
                 rtMavenResolver (
                     id: "MAVEN_RESOLVER",
-                    serverId: "jfrog",
+                    serverId: "artifactory",
                     releaseRepo: "libs-release",
                     snapshotRepo: "libs-snapshot"
                 )
@@ -84,8 +73,8 @@ pipeline {
             steps {
                   sshagent(['sshkey']) {
                        
-                        sh "scp -o StrictHostKeyChecking=no Dockerfile ec2-user@34.229.61.202:/home/ec2-user"
-                        sh "scp -o StrictHostKeyChecking=no create-container-image.yaml ec2-user@34.229.61.202:/home/ec2-user"
+                        sh "scp -o StrictHostKeyChecking=no Dockerfile admin@3.8.136.128:/home/admin"
+                        sh "scp -o StrictHostKeyChecking=no create-container-image.yaml admin@3.8.136.128:/home/admin"
                     }
                 }
             
@@ -95,7 +84,7 @@ pipeline {
             steps {
                   sshagent(['sshkey']) {
                        
-                        sh "ssh -o StrictHostKeyChecking=no ec2-user@34.229.61.202 -C \"sudo ansible-playbook create-container-image.yaml\""
+                        sh "ssh -o StrictHostKeyChecking=no admin@3.8.136.128 -C \"sudo ansible-playbook create-container-image.yml\""
                         
                     }
                 }
@@ -106,8 +95,8 @@ pipeline {
             steps {
                   sshagent(['sshkey']) {
                        
-                        sh "scp -o StrictHostKeyChecking=no create-k8s-deployment.yaml ec2-user@54.162.42.75:/home/ec2-user"
-                        sh "scp -o StrictHostKeyChecking=no nodePort.yaml ec2-user@54.162.42.75:/home/ec2-user"
+                        sh "scp -o StrictHostKeyChecking=no create-k8s-deployment.yaml admin@3.8.201.107:/home/admin"
+                        sh "scp -o StrictHostKeyChecking=no nodePort.yaml admin@3.8.201.107:/home/admin"
                     }
                 }
             
@@ -126,8 +115,8 @@ pipeline {
             steps {
                   sshagent(['sshkey']) {
                        
-                        sh "ssh -o StrictHostKeyChecking=no ec2-user@54.162.42.75 -C \"sudo kubectl apply -f create-k8s-deployment.yaml\""
-                        sh "ssh -o StrictHostKeyChecking=no ec2-user@54.162.42.75 -C \"sudo kubectl apply -f nodePort.yaml\""
+                        sh "ssh -o StrictHostKeyChecking=no admin@3.8.201.107 -C \"sudo kubectl apply -f create-k8s-deployment.yaml\""
+                        sh "ssh -o StrictHostKeyChecking=no admin@3.8.201.107 -C \"sudo kubectl apply -f nodePort.yaml\""
                         
                     }
                 }
@@ -135,4 +124,3 @@ pipeline {
         } 
          
    } 
-}
